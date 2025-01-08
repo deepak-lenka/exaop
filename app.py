@@ -8,40 +8,84 @@ from langchain.prompts import ChatPromptTemplate
 st.set_page_config(
     page_title="ExaOp Search",
     page_icon="🔍",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # Apply custom CSS
 st.markdown("""
 <style>
-    .search-result {
-        background-color: #2D2D2D;
-        border-radius: 10px;
-        padding: 15px;
-        margin: 10px 0;
+    .stApp {
+        background: linear-gradient(to bottom, #1a1a1a, #2d2d2d) !important;
     }
-    .analysis-box {
-        background-color: #363636;
-        padding: 15px;
+    
+    .title-container {
+        text-align: center;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 2rem;
         border-radius: 10px;
-        margin: 10px 0;
-        border-left: 4px solid #00A6ED;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .source-link {
+    
+    .title-text {
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .subtitle {
+        color: #b0b0b0;
+        font-size: 1.1rem;
+    }
+    
+    a {
         color: #00A6ED !important;
-        text-decoration: none;
+        text-decoration: underline;
     }
-    .highlight {
-        background-color: #404040;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 5px 0;
+    
+    a:hover {
+        opacity: 0.8;
     }
-    /* Control image size */
-    .stImage > img {
-        max-height: 300px !important;
-        object-fit: contain;
+    
+    img {
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stSpinner > div {
+        border-color: #ffffff transparent transparent !important;
+    }
+    
+    /* Chat input container */
+    .stChatFloatingInputContainer, section[data-testid="stChatInput"] {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        max-width: 640px !important;
+        width: 90% !important;
+        padding: 1rem !important;
+        background: transparent !important;
+        border: none !important;
+        z-index: 999 !important;
+    }
+    
+    /* Chat input box */
+    .stChatInput {
+        background-color: #2b2c2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+        color: white !important;
+        width: 100% !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Add padding to main container to prevent overlap */
+    .main .block-container {
+        padding-bottom: 120px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -67,7 +111,8 @@ class ExaOpChatbot:
         
         # Analysis prompt for individual sources
         self.analysis_prompt = ChatPromptTemplate.from_messages([
-            ("system", """Analyze this source and extract key information relevant to the question.
+            ("system", """You are an expert analyst. Analyze this source and extract key information relevant to the question.
+            Focus on factual information and provide a clear, concise analysis.
             
             Question: {question}
             
@@ -77,29 +122,41 @@ class ExaOpChatbot:
             Summary: {summary}
             Key Points: {highlights}
             
-            Provide a concise analysis focusing on how this source answers the question."""),
-            ("human", "What relevant information does this source provide?")
+            Provide a structured analysis with:
+            1. Main Points
+            2. Relevance to Query
+            3. Key Takeaways"""),
+            ("human", "What are the key insights from this source?")
         ])
         
         # Summary prompt for final answer
         self.summary_prompt = ChatPromptTemplate.from_messages([
-            ("system", """Based on all the analyzed sources, provide a comprehensive answer to the question.
+            ("system", """You are a research analyst providing precise, factual answers based on the sources.
+            Focus on accuracy and clarity. Be direct and concise.
             
             Question: {question}
             
             Analyzed Sources:
             {analyzed_sources}
             
-            Format your response as:
-            📍 Direct Answer: [clear, concise answer]
-            📚 Additional Context: [important details]"""),
-            ("human", "Provide a comprehensive answer based on the sources.")
+            Guidelines for your response:
+            1. 📍 Direct Answer: Provide a clear, concise answer in 1-2 sentences maximum. Focus only on the most important facts.
+            2. 📚 Additional Context: Add 2-3 key supporting points from the sources, if relevant.
+            
+            Remember:
+            - Be precise and factual
+            - Avoid speculation or unsupported claims
+            - Use clear, simple language
+            - If there's uncertainty, state it clearly"""),
+            ("human", "Provide a precise answer based on the sources.")
         ])
 
     def process_query(self, query: str) -> dict:
         try:
             # 1. Perform Exa search
+            self.console.print(f"[blue]Searching for: {query}[/blue]")
             search_results = self.search.search_info(query)
+            
             if search_results.get("error"):
                 return {
                     "error": f"Search error: {search_results['error']}",
@@ -116,8 +173,10 @@ class ExaOpChatbot:
                     "final_answer": None
                 }
             
-            # 2. Analyze each source
+            # 2. Analyze each source with OpenAI
             analyses = []
+            self.console.print("[blue]Analyzing sources...[/blue]")
+            
             for source in search_results['results']:
                 try:
                     # Prepare source info
@@ -137,6 +196,7 @@ class ExaOpChatbot:
                         "source": source,
                         "analysis": analysis.content
                     })
+                    self.console.print(f"[green]✓ Analyzed: {source_info['title']}[/green]")
                 except Exception as e:
                     self.console.print(f"[yellow]Warning: Failed to analyze source {source.get('url')}: {str(e)}[/yellow]")
                     continue
@@ -151,8 +211,9 @@ class ExaOpChatbot:
             
             # 3. Generate final summary
             try:
+                self.console.print("[blue]Generating final summary...[/blue]")
                 analyzed_sources = "\n\n".join([
-                    f"Source: {a['source']['title']}\nAnalysis: {a['analysis']}"
+                    f"Source: {a['source']['title']}\nURL: {a['source']['url']}\nAnalysis: {a['analysis']}"
                     for a in analyses
                 ])
                 
@@ -162,6 +223,7 @@ class ExaOpChatbot:
                     "analyzed_sources": analyzed_sources
                 })
                 
+                self.console.print("[green]✓ Analysis complete![/green]")
                 return {
                     "error": None,
                     "search_results": search_results['results'],
@@ -196,113 +258,120 @@ def initialize_session_state():
 
 def display_response(response):
     """Display the response in a structured format"""
-    if response["error"]:
-        st.error(response["error"])
+    if not response:
+        st.error("No response received from the search")
+        return
+        
+    if response.get("error"):
+        st.error(f"Error: {response['error']}")
         return
     
-    # Show final answer
-    st.markdown(response["final_answer"])
+    # Show final answer if available
+    if response.get("final_answer"):
+        st.markdown(response["final_answer"])
     
     # Show analyzed sources
-    st.markdown("### 📚 Source Analysis")
-    
-    for analysis in response["analyses"]:
-        source = analysis["source"]
+    if response.get("analyses"):
+        st.markdown("## 📚 Search Results")
         
-        # Create a clean container for each source
-        with st.container():
-            # Source title and date
-            st.markdown(
-                f"### [{source.get('title', 'No Title')}]({source.get('url', '#')})"
-            )
-            st.markdown(f"Published: {source.get('publishedDate', 'N/A')[:10]}")
+        for idx, analysis in enumerate(response["analyses"], 1):
+            source = analysis.get("source", {})
             
-            # Handle images first
-            images = []
-            if source.get('image'):
-                images.append(source['image'])
-            if source.get('images'):
-                for img in source['images']:
-                    if isinstance(img, dict):
-                        images.append(img.get('url'))
-                    else:
-                        images.append(img)
-            
-            # Display images if available
-            if images:
-                cols = st.columns(min(len(images), 3))
-                for idx, img_url in enumerate(images[:3]):
-                    if img_url and isinstance(img_url, str) and img_url.startswith(('http://', 'https://')):
-                        with cols[idx]:
-                            try:
-                                st.image(img_url, width=250)
-                            except:
-                                pass
+            # Create a container for each source
+            with st.container():
+                # Source title and URL with Twitter/X indicator
+                st.markdown(f"### Source #{idx} {'🐦 Twitter/X' if source.get('source_type') == 'twitter' else ''}")
+                st.markdown(f"**Title:** {source.get('title', 'No Title')}")
+                
+                # Format URL based on source type
+                url = source.get('url', '#')
+                if source.get('source_type') == 'twitter':
+                    display_url = url.split('?')[0]  # Remove query parameters for display
+                else:
+                    display_url = url
+                st.markdown(f"**URL:** [{display_url}]({url})")
+                
+                # Handle Twitter/X photos and other images
+                images = []
+                
+                # Add Twitter photos if available
+                if source.get('source_type') == 'twitter':
+                    # Check tweet object first
+                    tweet = source.get('tweet', {})
+                    if tweet.get('photos'):
+                        images.extend(tweet['photos'])
+                    if tweet.get('media'):
+                        for media in tweet['media']:
+                            if isinstance(media, dict):
+                                if media.get('type') == 'photo':
+                                    images.append(media.get('url'))
+                                elif media.get('type') == 'image':
+                                    images.append(media.get('url'))
+                    if tweet.get('images'):
+                        for img in tweet['images']:
+                            if isinstance(img, dict):
+                                images.append(img.get('url'))
+                            elif isinstance(img, str):
+                                images.append(img)
+                    
+                    # Check source object as fallback
+                    if source.get('photos'):
+                        images.extend(source['photos'])
+                    if source.get('media'):
+                        for media in source['media']:
+                            if isinstance(media, dict):
+                                if media.get('type') == 'photo':
+                                    images.append(media.get('url'))
+                                elif media.get('type') == 'image':
+                                    images.append(media.get('url'))
+                
+                # Add regular images
+                if source.get('image'):
+                    images.append(source['image'])
+                if source.get('images'):
+                    for img in source['images']:
+                        if isinstance(img, dict):
+                            images.append(img.get('url'))
+                        elif isinstance(img, str):
+                            images.append(img)
+                
+                # Remove duplicates while preserving order
+                images = list(dict.fromkeys(images))
+                
+                # Display images
+                if images:
+                    st.markdown("#### 📸 Images")
+                    cols = st.columns(min(len(images), 3))
+                    for idx, img_url in enumerate(images[:3]):
+                        if img_url and isinstance(img_url, str) and img_url.startswith(("http://", "https://")):
+                            with cols[idx]:
+                                try:
+                                    st.image(img_url, use_column_width=True)
+                                except Exception as e:
+                                    st.warning(f"Unable to load image: {str(e)}")
+                
+                # AI Analysis
+                st.markdown("#### 🤖 AI Analysis")
+                st.markdown(analysis.get("analysis", "No analysis available"))
+                
+                # Source Highlights
+                if source.get("highlights"):
+                    with st.expander("📝 Source Highlights"):
+                        for highlight in source["highlights"]:
+                            st.markdown(f"• {highlight}")
+                
                 st.markdown("---")
-            
-            # AI Analysis
-            with st.expander("🤖 AI Analysis", expanded=True):
-                st.markdown(analysis['analysis'])
-            
-            # Source Highlights
-            if source.get('highlights'):
-                with st.expander("📝 Source Highlights", expanded=False):
-                    for highlight in source['highlights']:
-                        st.markdown(f"• {highlight}")
-            
-            st.markdown("---")
+    else:
+        st.warning("No analyzed sources available")
 
 def main():
-    # Add custom CSS for better styling
-    st.markdown("""
-        <style>
-        /* Main container */
-        .main {
-            background-color: #1E1E1E;
-        }
-        
-        /* Headers */
-        h1, h2, h3 {
-            color: #FFFFFF !important;
-            margin-bottom: 0.5em;
-        }
-        
-        /* Links */
-        a {
-            color: #00A6ED !important;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        
-        /* Expander styling */
-        .streamlit-expanderHeader {
-            background-color: #2D2D2D;
-            border-radius: 5px;
-        }
-        
-        /* Divider */
-        hr {
-            margin: 2em 0;
-            border-color: #404040;
-        }
-        
-        /* Chat message container */
-        .stChatMessage {
-            background-color: #2D2D2D;
-            border-radius: 10px;
-            padding: 1em;
-            margin: 0.5em 0;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
     # Title and Description
-    st.markdown('<div class="title-container">', unsafe_allow_html=True)
-    st.title("🔍 ExaOp Search")
-    st.markdown('<p class="subtitle">Powered by Advanced Neural Search & AI Analysis</p>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class="title-container">
+            <h1 class="title-text">🔍 ExaOp Search</h1>
+            <p class="subtitle">Powered by Advanced Neural Search & AI Analysis</p>
+        </div>
+    """, unsafe_allow_html=True)
     
     initialize_session_state()
     
