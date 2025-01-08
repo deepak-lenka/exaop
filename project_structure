@@ -1,0 +1,24 @@
+starlink-project/
+├── backend/
+│   ├── venv/
+│   ├── main.py           # FastAPI backend
+│   ├── starlink_tracker.py
+│   ├── config.py
+│   ├── .env             # Environment variables
+│   └── requirements.txt
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ChatWindow.jsx
+│   │   │   ├── DataViewer.jsx
+│   │   │   └── Navbar.jsx
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
+└── .gitignore 
