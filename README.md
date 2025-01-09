@@ -26,14 +26,6 @@ A powerful AI-powered search application that combines neural search using Exa A
 - **Search Engine**: Exa API
 - **AI Analysis**: OpenAI GPT
 - **Language**: Python 3.8+
-- **Key Libraries**:
-  - `streamlit>=1.29.0`
-  - `langchain>=0.0.350`
-  - `langchain-openai>=0.0.2`
-  - `openai>=1.6.1`
-  - `python-dotenv>=1.0.0`
-  - `rich>=13.7.0`
-  - `requests>=2.31.0`
 
 ## Installation 📦
 
