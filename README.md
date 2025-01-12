@@ -107,17 +107,7 @@ exaop/
 - Source attribution
 - Image support
 - Twitter media integration
-- Expandable highlights
-
-## Environment Variables ⚙️
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| EXA_API_KEY | Your Exa API key | Required |
-| OPENAI_API_KEY | Your OpenAI API key | Required |
-| MODEL_NAME | OpenAI model to use | gpt-3.5-turbo |
-| TEMPERATURE | Model temperature | 0.7 |
-| MAX_RESULTS | Maximum search results | 20 |
+- Expandable 
 
 ## Contributing 🤝
 
