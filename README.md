@@ -107,7 +107,7 @@ exaop/
 - Source attribution
 - Image support
 - Twitter media integration
-- Expandable 
+- Expandable highlights 
 
 ## Contributing 🤝
 
