@@ -1,0 +1,99 @@
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.media-item {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Twitter Card */
+.twitter-card {
+  background: rgba(29, 155, 240, 0.1);
+  border: 1px solid rgba(29, 155, 240, 0.2);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.twitter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.twitter-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: rgb(29, 155, 240);
+}
+
+.twitter-link {
+  color: rgb(29, 155, 240);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.twitter-content {
+  margin: 1rem 0;
+}
+
+.twitter-text {
+  white-space: pre-wrap;
+  margin-bottom: 1rem;
+}
+
+.twitter-footer {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+/* Analysis Card */
+.analysis-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.analysis-section {
+  margin-bottom: 1.5rem;
+}
+
+.analysis-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.5rem;
+}
+
+.section-content {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+}
+
+/* Source Highlights */
+.highlight {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(29, 155, 240, 0.5);
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+}

@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './components.css';
+
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 15, 23, 42;
