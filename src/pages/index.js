@@ -12,6 +12,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchStage, setSearchStage] = useState('searching');
+  const [showHeader, setShowHeader] = useState(true);
 
   const currentChat = chatHistory.find(chat => chat.id === currentChatId);
   const currentResults = currentChat?.results || [];
@@ -43,6 +44,7 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setSearchQuery(query);
+    setShowHeader(false);
     // Keep previous results
     
     try {
@@ -145,6 +147,7 @@ export default function Home() {
         onNewChat={() => {
           setCurrentChatId(null);
           setSearchQuery('');
+          setShowHeader(true);
         }}
         onSelectChat={(chatId) => {
           setCurrentChatId(chatId);
@@ -156,12 +159,14 @@ export default function Home() {
       <div className="main-wrapper">
         <main className="main-content relative min-h-screen">
         <div className="sticky top-0 z-50 bg-gray-900 bg-opacity-95 backdrop-blur-sm pt-8 pb-4 px-4 border-b border-gray-800">
-          <div className="hero-section mb-4">
-            <h1 className="app-title">Exaop.AI</h1>
-            <p className="app-description">
-              Advanced neural search platform with AI-powered analysis and insights
-            </p>
-          </div>
+          {showHeader && (
+            <div className="hero-section mb-4">
+              <h1 className="app-title">Exaop.AI</h1>
+              <p className="app-description">
+                Advanced neural search platform with AI-powered analysis and insights
+              </p>
+            </div>
+          )}
           <div className="search-section">
             <SearchForm onSearch={handleSearch} isLoading={isLoading} />
           </div>
