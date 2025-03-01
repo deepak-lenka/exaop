@@ -120,7 +120,7 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   position: relative;
   min-height: 100vh;
@@ -149,10 +149,12 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, transparent 100%);
   position: relative;
   transition: all 0.3s ease;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .hero-section::after {
@@ -166,9 +168,9 @@ body {
 }
 
 .app-title {
-  font-size: 4rem;
+  font-size: 2.5rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   background: linear-gradient(135deg, var(--exaop-gradient-1), var(--exaop-gradient-2), var(--exaop-gradient-3));
   -webkit-background-clip: text;
   background-clip: text;
