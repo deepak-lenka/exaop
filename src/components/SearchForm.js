@@ -18,6 +18,7 @@ export default function SearchForm({ onSearch, isLoading }) {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query);
+      setQuery(''); // Clear input after submission
     }
   };
 
@@ -43,6 +44,7 @@ export default function SearchForm({ onSearch, isLoading }) {
                 e.preventDefault();
                 if (query.trim()) {
                   onSearch(query);
+                  setQuery(''); // Clear input after submission
                 }
               }
             }}
